@@ -20,9 +20,11 @@ namespace MinimumCoins
             int amount = 18;
 
 
-            Console.WriteLine("Using DP: Minimum number of coins: {0}", FindMinimumCoins1(amount, denoms));
+            Console.WriteLine("Using DP recursive: Minimum number of coins: {0}", FindMinimumCoins1(amount, denoms));
 
             Console.WriteLine("Using greedy approach: Minimum number of coins: {0}", FindMinimumCoins2(amount, denoms));
+
+            Console.WriteLine("Using DP iterative: Minimum number of coins: {0}", FindMinimumCoins3(amount, denoms));
         }
 
         static Dictionary<int, int> cache = new Dictionary<int, int>();
@@ -86,6 +88,7 @@ namespace MinimumCoins
             return minimum;
         }
 
+        // Greedy approach
         static int FindMinimumCoins2(int amount, int[] denoms)
         {
             if (amount == 0)
@@ -112,6 +115,36 @@ namespace MinimumCoins
             }
 
             return result;
+        }
+
+        // DP using iterative
+        static int FindMinimumCoins3(int amount, int[] denoms)
+        {
+            int[] entries = new int[amount + 1];
+
+            // Fill in the array by figuring out how 
+            // to make arr[i] using the given denominations
+
+            entries[0] = 0;
+
+            for (int i = 1; i < entries.Length; i++)
+            {
+                List<int> result = new List<int>();
+
+                for (int j = 0; j < denoms.Length; j++)
+                {
+                    int newAmount = (i - denoms[j]);
+                    if (newAmount >= 0)
+                    {
+                        int numOfCoins = 1 + entries[newAmount];
+                        result.Add(numOfCoins);
+                    }
+                }
+
+                entries[i] = Minimum(result);
+            }
+
+            return entries[entries.Length - 1];
         }
     }
 }
