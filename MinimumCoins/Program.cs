@@ -13,10 +13,7 @@ namespace MinimumCoins
     {
         static void Main(string[] args)
         {
-            // int[] denoms = { 7, 4, 1 };
             int[] denoms = { 14, 9, 2};
-
-            // int amount = 8;
             int amount = 18;
 
 
@@ -25,6 +22,37 @@ namespace MinimumCoins
             Console.WriteLine("Using greedy approach: Minimum number of coins: {0}", FindMinimumCoins2(amount, denoms));
 
             Console.WriteLine("Using DP iterative: Minimum number of coins: {0}", FindMinimumCoins3(amount, denoms));
+
+            var result = FindMinimumCoins4(amount, denoms);
+            Console.WriteLine("Using DP recursive: Minimum coins to make amount {0}", amount);
+
+            foreach (int value in result)
+            {
+                Console.Write(value + " ");
+            }
+
+            Console.WriteLine();
+
+            TestAllCombinationsForAmount(18, new int[]{14, 9, 2});
+            TestAllCombinationsForAmount(6, new int[] {25, 10, 5, 1});
+
+        }
+
+        static void TestAllCombinationsForAmount(int amount, int[] denoms)
+        {
+            Console.WriteLine("All possible ways to generate {0} is", amount);
+            
+            var outputList = ChangeCombinations(amount, denoms);
+
+            foreach (var list in outputList)
+            {
+                foreach (int value in list)
+                {
+                    Console.Write(value + " ");
+                }
+
+                Console.WriteLine();
+            }
         }
 
         static Dictionary<int, int> cache = new Dictionary<int, int>();
@@ -89,6 +117,7 @@ namespace MinimumCoins
         }
 
         // Greedy approach
+        // The greedy approach works by 
         static int FindMinimumCoins2(int amount, int[] denoms)
         {
             if (amount == 0)
@@ -145,6 +174,106 @@ namespace MinimumCoins
             }
 
             return entries[entries.Length - 1];
+        }
+
+        static Dictionary<int, List<int>> cache2 = new Dictionary<int, List<int>>();
+
+        // assume denoms is sorted in descending order
+        // Returns the minimum set of coins to make an amount
+        static List<int> FindMinimumCoins4(int amount, int[] denoms)
+        {
+            if (amount == 0)
+            {
+                return new List<int>();
+            }
+
+            if (cache2.ContainsKey(amount))
+            {
+                return cache2[amount];
+            }
+
+            List<List<int>> allLists = new List<List<int>>();
+
+            for (int i = 0; i < denoms.Length; i++)
+            {
+                if (amount - denoms[i] >= 0)
+                {
+                    List<int> subset = FindMinimumCoins4(amount - denoms[i], denoms);
+
+                    if (subset != null)
+                    {
+                        subset.Add(denoms[i]);
+                        allLists.Add(subset);
+                    }
+                }
+            }
+
+            List<int> smallestList = Minimum(allLists);
+
+            cache2.Add(amount, smallestList);
+
+            return smallestList;
+        }
+
+        static List<int> Minimum(List<List<int>> inputLists)
+        {
+            List<int> smallestList = null;
+
+            foreach (var list in inputLists)
+            {
+                if (smallestList == null || list.Count < smallestList.Count)
+                {
+                    smallestList = list;
+                }
+            }
+
+            return smallestList;
+        }
+
+        static List<List<int>> ChangeCombinations(int amount, int[] denoms)
+        {
+            List<List<int>> result = new List<List<int>>();
+
+            if (amount == 0)
+            {
+                result.Add(new List<int>());
+            }
+            else
+            {
+
+                for (int i = 0; i < denoms.Length; i++)
+                {
+                    int newAmount = amount - denoms[i];
+
+                    if (newAmount >= 0)
+                    {
+                        int[] newDenoms = GetNewDenoms(denoms, i);
+
+                        var subset = ChangeCombinations(newAmount, newDenoms);
+
+                        foreach (var list in subset)
+                        {
+                            list.Add(denoms[i]);
+
+                            result.Add(list);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        static int[] GetNewDenoms(int[] originalDenoms, int index)
+        {
+            int[] newDenoms = new int[originalDenoms.Length - index];
+
+            for (int i = index, j = 0; i < originalDenoms.Length; i++, j++)
+            {
+                newDenoms[j] = originalDenoms[i];
+            }
+
+            return newDenoms;
         }
     }
 }
