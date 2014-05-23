@@ -89,7 +89,7 @@ namespace MinimumCoins
                 }
             }
 
-            int minimumCoins = Minimum(result);
+            int minimumCoins = result.Min();
 
             cache.Add(amount, minimumCoins);
 
